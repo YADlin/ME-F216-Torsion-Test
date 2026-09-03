@@ -8,9 +8,9 @@ The experiment is used to determine the **modulus of rigidity (G)** of the mater
 
 The experiment is based on the torsion relation:
 
-\[
+$$
 \frac{T}{J}=\frac{\tau}{R}=\frac{G\theta}{L}
-\]
+$$
 
 where:
 
@@ -24,9 +24,9 @@ where:
 
 For a solid circular specimen,
 
-\[
+$$
 J=\frac{\pi d^4}{32}
-\]
+$$
 
 where \(d\) is the specimen diameter.
 
@@ -36,17 +36,17 @@ where \(d\) is the specimen diameter.
 
 Within the initial elastic or proportional region, the applied torque is approximately proportional to the angle of twist:
 
-\[
+$$
 T=m\theta
-\]
+$$
 
 where \(m\) is the slope of the torque–twist curve.
 
 Combining this relation with the torsion equation gives:
 
-\[
+$$
 G=\frac{mL}{J}
-\]
+$$
 
 Therefore, the modulus of rigidity is obtained from the **slope of the initial linear portion** of the torque–twist curve.
 
@@ -116,15 +116,15 @@ A high \(R^2\) value alone does not establish that a set of readings belongs to 
 
 The analysis uses:
 
-\[
+$$
 1\ \text{kgf·cm}=98.0665\ \text{N·mm}
-\]
+$$
 
 and
 
-\[
+$$
 1\ \text{kgf·m}=9806.65\ \text{N·mm}
-\]
+$$
 
 The angle of twist entered in degrees is converted to radians for calculating the modulus of rigidity.
 
