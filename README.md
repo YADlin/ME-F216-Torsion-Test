@@ -14,13 +14,13 @@ $$
 
 where:
 
-- \(T\) = applied torque
-- \(J\) = polar moment of inertia of the specimen cross-section
-- \(\tau\) = shear stress
-- \(R\) = outer radius of the specimen
-- \(G\) = modulus of rigidity
-- \(\theta\) = angle of twist in radians
-- \(L\) = gauge length of the specimen
+- T = applied torque
+- J = polar moment of inertia of the specimen cross-section
+- $\tau$ = shear stress
+- R = outer radius of the specimen
+- G = modulus of rigidity
+- $\theta$ = angle of twist in radians
+- L = gauge length of the specimen
 
 For a solid circular specimen,
 
@@ -28,7 +28,7 @@ $$
 J=\frac{\pi d^4}{32}
 $$
 
-where \(d\) is the specimen diameter.
+where d is the specimen diameter.
 
 ---
 
@@ -40,7 +40,7 @@ $$
 T=m\theta
 $$
 
-where \(m\) is the slope of the torque–twist curve.
+where m is the slope of the torque–twist curve.
 
 Combining this relation with the torsion equation gives:
 
@@ -50,7 +50,7 @@ $$
 
 Therefore, the modulus of rigidity is obtained from the **slope of the initial linear portion** of the torque–twist curve.
 
-The angle of twist must be expressed in **radians** when calculating \(G\).
+The angle of twist must be expressed in **radians** when calculating G.
 
 ---
 
@@ -59,7 +59,7 @@ The angle of twist must be expressed in **radians** when calculating \(G\).
 As the torque is increased, the specimen typically passes through different stages of deformation:
 
 1. **Elastic / proportional region**  
-   Torque and angle of twist show an approximately linear relationship. The slope of this region is used to determine \(G\).
+   Torque and angle of twist show an approximately linear relationship. The slope of this region is used to determine G.
 
 2. **Yielding and plastic deformation**  
    The relationship becomes nonlinear as the material begins to undergo permanent deformation.
