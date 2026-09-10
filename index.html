@@ -38,7 +38,7 @@ canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-
 <h2>2. Enter readings</h2>
 <p class="small">Enter one measured pair per row. Angles are in degrees. Torque uses the selected unit. The angles are pre-filled; leave unused rows blank.</p>
 <div class="tablewrap"><table class="readings"><thead><tr><th>#</th><th>Angle of twist θ (degrees)</th><th>Torque T</th></tr></thead><tbody id="tbody"></tbody></table></div>
-<div class="actions"><button class="btn secondary" id="add">Add 10 rows</button><button class="btn danger" id="clear">Clear readings</button></div>
+<div class="actions"><button class="btn secondary" id="add">Add 10 rows</button><button class="btn secondary" id="clearExtra">Clear unused θ</button><button class="btn danger" id="clear">Clear readings</button></div>
 </section>
 
 <section class="card">
@@ -94,6 +94,12 @@ function buildRows(count, old=null){
 }
 buildRows(rowCount);
 $('add').onclick=()=>{const old=[...document.querySelectorAll('#tbody tr')].map(r=>[r.querySelector('.ang').value,r.querySelector('.tor').value]);rowCount+=10;buildRows(rowCount,old)};
+$('clearExtra').onclick=()=>{
+ document.querySelectorAll('#tbody tr').forEach(row=>{
+   const torque=row.querySelector('.tor').value.trim();
+   if(torque==='') row.querySelector('.ang').value='';
+ });
+};
 $('clear').onclick=()=>document.querySelectorAll('.ang,.tor').forEach(x=>x.value='');
 $('nfit').oninput=()=>{$('nfitv').textContent=$('nfit').value};
 
