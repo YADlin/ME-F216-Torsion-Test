@@ -36,7 +36,7 @@ canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-
 
 <section class="card">
 <h2>2. Enter readings</h2>
-<p class="small">Enter one measured pair per row. Angles are in degrees. Torque uses the selected unit. The first 20 angles are pre-filled; leave unused rows blank.</p>
+<p class="small">Enter one measured pair per row. Angles are in degrees. Torque uses the selected unit. The angles are pre-filled; leave unused rows blank.</p>
 <div class="tablewrap"><table class="readings"><thead><tr><th>#</th><th>Angle of twist θ (degrees)</th><th>Torque T</th></tr></thead><tbody id="tbody"></tbody></table></div>
 <div class="actions"><button class="btn secondary" id="add">Add 10 rows</button><button class="btn danger" id="clear">Clear readings</button></div>
 </section>
@@ -67,7 +67,7 @@ canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-
 <div class="actions"><button class="btn secondary" id="dlElastic">Download elastic graph PNG</button></div>
 <h3>Complete torque–twist curve</h3>
 <canvas id="fullPlot" width="1200" height="720"></canvas>
-<div class="actions"><button class="btn secondary" id="dlFull">Download complete graph PNG</button><button class="btn secondary" id="dlCsv">Download processed CSV</button></div>
+<div class="actions"><button class="btn secondary" id="dlFull">Download complete graph PNG</button><button class="btn secondary" id="dlCsv">Download processed CSV</button><button class="btn primary" id="dlReport">Download report</button></div>
 <h3>Processed readings</h3><div class="tableout" id="dataTable"></div>
 </section>
 
@@ -148,7 +148,7 @@ function ranges(vals){
 function draw(canvas,xs,ys,title,ylabel,line,hi){
  const c=canvas,ctx=c.getContext('2d'),W=c.width,H=c.height,ml=90,mr=28,mt=48,mb=70,pw=W-ml-mr,ph=H-mt-mb;
  ctx.clearRect(0,0,W,H);ctx.fillStyle='#fff';ctx.fillRect(0,0,W,H);
- const xmin=Math.min(...xs),xmax=Math.max(...xs),[ymin,ymax]=ranges(ys),X=v=>ml+(v-xmin)/(xmax-xmin||1)*pw,Y=v=>mt+(ymax-v)/(ymax-ymin||1)*ph;
+ const xmin=0,xmax=Math.max(...xs),[ymin,ymax]=ranges(ys),X=v=>ml+(v-xmin)/(xmax-xmin||1)*pw,Y=v=>mt+(ymax-v)/(ymax-ymin||1)*ph;
  ctx.font='13px system-ui';ctx.fillStyle='#5b6875';ctx.strokeStyle='#dfe3e8';ctx.lineWidth=1;
  for(let i=0;i<=5;i++){let xx=ml+i*pw/5,yy=mt+i*ph/5;ctx.beginPath();ctx.moveTo(xx,mt);ctx.lineTo(xx,mt+ph);ctx.stroke();ctx.beginPath();ctx.moveTo(ml,yy);ctx.lineTo(ml+pw,yy);ctx.stroke();ctx.fillText((xmin+(xmax-xmin)*i/5).toFixed(xmax-xmin<20?1:0),xx-12,H-43);ctx.fillText((ymax-(ymax-ymin)*i/5).toFixed(ymax<10?2:0),8,yy+4)}
  ctx.strokeStyle='#65717d';ctx.beginPath();ctx.moveTo(ml,mt);ctx.lineTo(ml,mt+ph);ctx.lineTo(ml+pw,mt+ph);ctx.stroke();
@@ -158,11 +158,9 @@ function draw(canvas,xs,ys,title,ylabel,line,hi){
     ctx.lineWidth=3;
     ctx.beginPath();
     ctx.moveTo(X(line[0][0]),Y(line[0][1]));
-
     for(let i=1;i<line.length;i++){
         ctx.lineTo(X(line[i][0]),Y(line[i][1]));
     }
-
     ctx.stroke();
 }
  ctx.fillStyle='#17202a';xs.forEach((v,i)=>{ctx.beginPath();ctx.arc(X(v),Y(ys[i]),4,0,Math.PI*2);ctx.fill()});
@@ -193,9 +191,79 @@ function dlCanvas(id,name){const a=document.createElement('a');a.download=name;a
 $('dlElastic').onclick=()=>dlCanvas('elasticPlot','torsion_elastic_region.png');
 $('dlFull').onclick=()=>dlCanvas('fullPlot','torsion_full_torque_twist_curve.png');
 $('dlCsv').onclick=()=>{
- if(!last)return;let s='Angle (deg),Angle (rad),Torque ('+last.unit+'),Torque (N·mm),Used for G?\\n';
- last.r.forEach((v,i)=>s+=v.a+','+last.rad[i]+','+v.t+','+last.T[i]+','+(i<last.n?'Yes':'No')+'\\n');
- const a=document.createElement('a');a.download='torsion_processed_data.csv';a.href=URL.createObjectURL(new Blob([s],{type:'text/csv'}));a.click();
+ if(!last)return;
+ const rows=[['Angle (deg)','Angle (rad)','Torque ('+last.unit+')','Torque (N·mm)','Used for G?']];
+ last.r.forEach((v,i)=>rows.push([
+   v.a,
+   last.rad[i],
+   v.t,
+   last.T[i],
+   i<last.n?'Yes':'No'
+ ]));
+ const csv=rows.map(row=>row.map(v=>{
+   const s=String(v);
+   return /[",\\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+ }).join(',')).join('\\n')+'\\n';
+ const a=document.createElement('a');
+ a.download='torsion_processed_data.csv';
+ a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+ a.click();
+ URL.revokeObjectURL(a.href);
+};
+
+$('dlReport').onclick=()=>{
+ if(!last)return;
+ const d=Number($('d').value), L=Number($('L').value);
+ const J=Math.PI*d**4/32;
+ const f=reg(last.rad.slice(0,last.n),last.T.slice(0,last.n));
+ const G=f.m*L/J/1000;
+ const elasticImg=$('elasticPlot').toDataURL('image/png');
+ const fullImg=$('fullPlot').toDataURL('image/png');
+ const now=new Date().toLocaleString();
+
+ let table='<table><thead><tr><th>Angle (deg)</th><th>Angle (rad)</th><th>Torque ('+last.unit+')</th><th>Torque (N·mm)</th><th>Used for G?</th></tr></thead><tbody>';
+ last.r.forEach((v,i)=>{
+   table+='<tr><td>'+v.a+'</td><td>'+last.rad[i].toFixed(6)+'</td><td>'+v.t+'</td><td>'+last.T[i].toFixed(3)+'</td><td>'+(i<last.n?'Yes':'No')+'</td></tr>';
+ });
+ table+='</tbody></table>';
+
+ const report='<!doctype html><html><head><meta charset="utf-8"><title>ME F216 — Torsion Test Report</title>'+
+ '<style>'+
+ 'body{font-family:Arial,Helvetica,sans-serif;color:#17202a;max-width:1000px;margin:32px auto;padding:0 24px;line-height:1.45}'+
+ 'h1{margin-bottom:4px}h2{border-bottom:1px solid #ccc;padding-bottom:6px;margin-top:28px}'+
+ '.sub{color:#61707e}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}'+
+ '.box{border:1px solid #d7dde4;border-radius:8px;padding:12px}.box b{display:block;font-size:12px;color:#61707e}.box strong{font-size:20px}'+
+ 'table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #cfd5db;padding:6px 8px;text-align:right}th{background:#eef2f5}'+
+ 'th:last-child,td:last-child{text-align:center}.plot{width:100%;border:1px solid #d7dde4;margin:8px 0 20px}'+
+ '.note{background:#fff8df;border:1px solid #e6d29a;padding:10px;border-radius:7px}'+
+ '@media print{body{margin:12mm auto;padding:0}.plot{break-inside:avoid}h2{break-after:avoid}}'+
+ '</style></head><body>'+
+ '<h1>ME F216 — Torsion Test Analysis Report</h1><p class="sub">Generated '+now+'</p>'+
+ '<h2>Specimen information</h2>'+
+ '<div class="grid"><div class="box"><b>Diameter d</b><strong>'+d+' mm</strong></div>'+
+ '<div class="box"><b>Gauge length L</b><strong>'+L+' mm</strong></div>'+
+ '<div class="box"><b>Torque input unit</b><strong>'+last.unit+'</strong></div></div>'+
+ '<h2>Results</h2>'+
+ '<div class="grid"><div class="box"><b>Polar moment J</b><strong>'+J.toFixed(3)+' mm⁴</strong></div>'+
+ '<div class="box"><b>Slope m</b><strong>'+f.m.toFixed(1)+' N·mm/rad</strong></div>'+
+ '<div class="box"><b>R²</b><strong>'+f.r2.toFixed(5)+'</strong></div>'+
+ '<div class="box"><b>Modulus G</b><strong>'+G.toFixed(3)+' GPa</strong></div></div>'+
+ '<p class="note">'+(f.r2<.99?'R² is below 0.99. Try changing the number of elastic points and inspect the graph.':'Strong linear fit for the selected points. Still inspect the graph and compare nearby point counts before accepting the elastic region.')+'</p>'+
+ '<p><strong>Initial points used for regression:</strong> '+last.n+'</p>'+
+ '<h2>Elastic / Proportional Region</h2><img class="plot" src="'+elasticImg+'">'+
+ '<h2>Complete Torque–Twist Curve</h2><img class="plot" src="'+fullImg+'">'+
+ '<h2>Processed readings</h2>'+table+
+ '<h2>Calculation used</h2>'+
+ '<p>For a solid circular specimen, <strong>J = πd⁴/32</strong>. The selected initial readings are fitted to <strong>T = a + mθ</strong>, using torque in N·mm and θ in radians, then <strong>G = mL/J</strong>.</p>'+
+ '<p>Conversions: 1 kgf·cm = 98.0665 N·mm; 1 kgf·m = 9806.65 N·mm.</p>'+
+ '<p class="note">The selected number of elastic points is a starting point. Compare nearby choices and inspect the fitted graph; a high R² alone does not prove that the selected points are physically elastic.</p>'+
+ '</body></html>';
+
+ const a=document.createElement('a');
+ a.download='torsion_test_report.html';
+ a.href=URL.createObjectURL(new Blob([report],{type:'text/html;charset=utf-8'}));
+ a.click();
+ URL.revokeObjectURL(a.href);
 };
 </script>
 </body>
