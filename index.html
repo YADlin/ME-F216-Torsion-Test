@@ -112,12 +112,35 @@ function readings(){
  return out;
 }
 function reg(x,y){
- const n=x.length,xm=x.reduce((s,v)=>s+v,0)/n,ym=y.reduce((s,v)=>s+v,0)/n;
- let num=0,den=0;for(let i=0;i<n;i++){num+=(x[i]-xm)*(y[i]-ym);den+=(x[i]-xm)**2}
- if(!den)throw Error('Selected angles must not all be identical.');
- const m=num/den,a=ym-m*xm,p=y.map(v=>a+m*v);
- let sr=0,st=0;for(let i=0;i<n;i++){sr+=(y[i]-p[i])**2;st+=(y[i]-ym)**2}
- return {m,a,r2:st?1-sr/st:NaN};
+  const n=x.length;
+  const xm=x.reduce((s,v)=>s+v,0)/n;
+  const ym=y.reduce((s,v)=>s+v,0)/n;
+
+  let num=0,den=0;
+  for(let i=0;i<n;i++){
+    num+=(x[i]-xm)*(y[i]-ym);
+    den+=(x[i]-xm)**2;
+  }
+
+  if(!den)throw Error('Selected angles must not all be identical.');
+
+  const m=num/den;
+  const a=ym-m*xm;
+
+  // Calculate R² as the square of the Pearson correlation coefficient.
+  // This is numerically more stable than 1 - SSE/SST.
+  let sxx=0,syy=0,sxy=0;
+  for(let i=0;i<n;i++){
+    const dx=x[i]-xm;
+    const dy=y[i]-ym;
+    sxx+=dx*dx;
+    syy+=dy*dy;
+    sxy+=dx*dy;
+  }
+
+  const r2=(sxx>0 && syy>0) ? (sxy*sxy)/(sxx*syy) : NaN;
+
+  return {m,a,r2};
 }
 function ranges(vals){
  let lo=Math.min(...vals),hi=Math.max(...vals),d=hi-lo;if(!d)d=Math.abs(hi)||1;return [Math.max(0,lo-.08*d),hi+.08*d];
