@@ -192,6 +192,7 @@ $('dlElastic').onclick=()=>dlCanvas('elasticPlot','torsion_elastic_region.png');
 $('dlFull').onclick=()=>dlCanvas('fullPlot','torsion_full_torque_twist_curve.png');
 $('dlCsv').onclick=()=>{
  if(!last)return;
+
  const rows=[['Angle (deg)','Angle (rad)','Torque ('+last.unit+')','Torque (N·mm)','Used for G?']];
  last.r.forEach((v,i)=>rows.push([
    v.a,
@@ -200,15 +201,28 @@ $('dlCsv').onclick=()=>{
    last.T[i],
    i<last.n?'Yes':'No'
  ]));
+
+ // Use an explicit CRLF character sequence. This avoids any ambiguity
+ // caused by escaping \n inside the generated JavaScript/HTML.
+ const newline=String.fromCharCode(13,10);
+
  const csv=rows.map(row=>row.map(v=>{
    const s=String(v);
-   return /[",\\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
- }).join(',')).join('\n')+'\n';
+   return /[",\r\n]/.test(s)
+     ? '"'+s.replace(/"/g,'""')+'"'
+     : s;
+ }).join(',')).join(newline)+newline;
+
+ // UTF-8 BOM improves Excel compatibility.
+ const blob=new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
  const a=document.createElement('a');
+ a.href=url;
  a.download='torsion_processed_data.csv';
- a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+ document.body.appendChild(a);
  a.click();
- URL.revokeObjectURL(a.href);
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
 };
 
 $('dlReport').onclick=()=>{
