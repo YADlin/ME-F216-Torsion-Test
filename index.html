@@ -12,7 +12,7 @@ main{max-width:1120px;margin:auto;padding:28px 18px 55px}.hero{margin-bottom:18p
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.field label{display:block;font-weight:650;font-size:13px;margin-bottom:5px}.field input,.field select{width:100%;padding:10px;border:1px solid #b9c2cc;border-radius:7px;font-size:15px;background:#fff}
 .tablewrap{overflow:auto;border:1px solid var(--line);border-radius:8px}.readings{border-collapse:collapse;width:100%;min-width:500px}.readings th,.readings td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:left}.readings th{background:#eef2f5;font-size:13px}.readings td:first-child{color:var(--muted);width:48px}.readings input{width:100%;padding:7px;border:1px solid #c2c9d1;border-radius:5px;font-size:15px}
 .actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:13px}.btn{border:0;border-radius:7px;padding:10px 15px;font-weight:700;font-size:14px;cursor:pointer}.primary{background:var(--accent);color:#fff}.primary:hover{background:var(--accent2)}.secondary{background:#e9edf1;color:#1e2932}.danger{background:#f8e3e3;color:#8c1c1c}
-.fit{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.fit input{width:330px}.badge{background:#e7f0f7;color:#14547e;padding:4px 10px;border-radius:999px;font-weight:750}.small{color:var(--muted);font-size:13px}.note{background:var(--warnbg);border:1px solid #e6d29a;border-radius:8px;padding:11px;color:var(--warn);font-size:14px}.error{color:#9b1c1c;font-weight:650;margin-top:9px}
+.fit{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.fit input{width:330px}.badge{background:#e7f0f7;color:#14547e;padding:4px 10px;border-radius:999px;font-weight:750}.small{color:var(--muted);font-size:13px}.note{background:var(--warnbg);border:1px solid #e6d29a;border-radius:8px;padding:11px;color:var(--warn);font-size:14px}.formula{margin:14px 0;padding:14px 18px;border:1px solid var(--line);border-radius:9px;background:#f7f9fb;text-align:center}.formula span{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}.formula strong{display:block;font-size:24px}.formula small{display:block;font-size:12px;color:var(--muted);margin-top:5px}.error{color:#9b1c1c;font-weight:650;margin-top:9px}
 .hidden{display:none}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{border:1px solid var(--line);border-radius:9px;padding:12px}.metric span{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-size:20px;margin-top:3px}
 canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:8px;background:#fff}.tableout{overflow:auto;margin-top:14px}.processed{border-collapse:collapse;width:100%;font-size:13px}.processed th,.processed td{border:1px solid var(--line);padding:6px 8px;text-align:right}.processed th{background:#eef2f5}.processed th:last-child,.processed td:last-child{text-align:center}
 @media(max-width:720px){.grid,.metrics{grid-template-columns:1fr 1fr}}@media(max-width:480px){.grid,.metrics{grid-template-columns:1fr}.hero h1{font-size:24px}.fit input{width:100%}}
@@ -61,7 +61,7 @@ canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-
 <div class="metric"><span>R²</span><strong id="rout">—</strong></div>
 <div class="metric"><span>Modulus G</span><strong id="Gout">—</strong></div>
 </div>
-<p id="message" class="note"></p>
+<p id="message" class="note"></p><div class="formula"><span>Modulus of rigidity</span><strong>G = mL / J</strong><small>where m = ΔT / Δθ, with θ in radians</small></div>
 <h3>Elastic / proportional region</h3>
 <canvas id="elasticPlot" width="1200" height="700"></canvas>
 <div class="actions"><button class="btn secondary" id="dlElastic">Download elastic graph PNG</button></div>
@@ -73,7 +73,7 @@ canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-
 
 <section class="card">
 <h2>Calculation used</h2>
-<p>For a solid circular specimen, <strong>J = πd⁴/32</strong>. Fit the selected initial readings to <strong>T = a + mθ</strong>, using torque in N·mm and θ in radians, then calculate <strong>G = mL/J</strong>.</p>
+<p>For a solid circular specimen, <strong>J = πd⁴/32</strong>. Fit the selected initial readings to <strong>T = a + mθ</strong>, using torque in N·mm and θ in radians.</p><div class="formula"><span>Modulus of rigidity</span><strong>G = mL / J</strong><small>m = slope of the T–θ graph = ΔT / Δθ</small></div>
 <p class="small">Conversions: 1 kgf·cm = 98.0665 N·mm; 1 kgf·m = 9806.65 N·mm.</p>
 <div class="note">The default of 7 points is only a starting point. Compare a few more and fewer points and inspect the fitted graph. A high R² does not by itself prove that the selected points are physically elastic.</div>
 </section>
@@ -274,6 +274,10 @@ $('dlReport').onclick=()=>{
  '.small{font-size:9.5pt;color:#4e5b65}'+
  '.plot{display:block;width:100%;height:auto;border:1px solid #d8dde1;margin:8px 0 0}'+
  '.plot-wrap{break-inside:avoid}'+
+ ' .formula{margin:14px 0;padding:12px 16px;border:1px solid #cfd5da;border-radius:5px;background:#f7f9fb;text-align:center;break-inside:avoid}'+
+ ' .formula span{display:block;font-size:9.5pt;color:#5e6b76;margin-bottom:3px}'+
+ ' .formula strong{display:block;font-size:17pt}'+
+ ' .formula small{display:block;font-size:8.5pt;color:#65727d;margin-top:3px}'+
  'table{border-collapse:collapse;width:100%;font-size:8.5pt}'+
  'thead{display:table-header-group}'+
  'th,td{border:1px solid #cbd2d8;padding:5px 6px;text-align:right}'+
@@ -308,7 +312,8 @@ $('dlReport').onclick=()=>{
  '<div class="page">'+
  '<h2>Processed readings</h2>'+table+
  '<h2 style="margin-top:22px">Calculation used</h2>'+
- '<p>For a solid circular specimen, <strong>J = πd⁴/32</strong>. The selected initial readings are fitted to <strong>T = a + mθ</strong>, using torque in N·mm and θ in radians, then <strong>G = mL/J</strong>.</p>'+
+ '<p>For a solid circular specimen, <strong>J = πd⁴/32</strong>. The selected initial readings are fitted to <strong>T = a + mθ</strong>, using torque in N·mm and θ in radians.</p>'+
+ '<div class="formula"><span>Modulus of rigidity</span><strong>G = mL / J</strong><small>where m = ΔT / Δθ is the slope of the torque–twist graph</small></div>'+
  '<p>Conversions: 1 kgf·cm = 98.0665 N·mm; 1 kgf·m = 9806.65 N·mm.</p>'+
  '<p class="note">The selected number of elastic points is a starting point. Compare nearby choices and inspect the fitted graph; a high R² alone does not prove that the selected points are physically elastic.</p>'+
  '</div>'+
