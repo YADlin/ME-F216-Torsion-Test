@@ -87,7 +87,7 @@ function buildRows(count, old=null){
  const tb=$('tbody');tb.innerHTML='';
  for(let i=0;i<count;i++){
   const tr=document.createElement('tr'), v=old&&old[i]?old[i]:null;
-  const a=v?v[0]:(i<16?i:''),t=v?v[1]:'';
+  const a=v?v[0]:(i<16?i:30+(i-16)*45),t=v?v[1]:'';
   tr.innerHTML='<td>'+(i+1)+'</td><td><input class="ang" type="number" step="any" value="'+a+'"></td><td><input class="tor" type="number" step="any" value="'+t+'"></td>';
   tb.appendChild(tr);
  }
