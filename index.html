@@ -153,7 +153,18 @@ function draw(canvas,xs,ys,title,ylabel,line,hi){
  for(let i=0;i<=5;i++){let xx=ml+i*pw/5,yy=mt+i*ph/5;ctx.beginPath();ctx.moveTo(xx,mt);ctx.lineTo(xx,mt+ph);ctx.stroke();ctx.beginPath();ctx.moveTo(ml,yy);ctx.lineTo(ml+pw,yy);ctx.stroke();ctx.fillText((xmin+(xmax-xmin)*i/5).toFixed(xmax-xmin<20?1:0),xx-12,H-43);ctx.fillText((ymax-(ymax-ymin)*i/5).toFixed(ymax<10?2:0),8,yy+4)}
  ctx.strokeStyle='#65717d';ctx.beginPath();ctx.moveTo(ml,mt);ctx.lineTo(ml,mt+ph);ctx.lineTo(ml+pw,mt+ph);ctx.stroke();
  ctx.fillStyle='#17202a';ctx.font='bold 16px system-ui';ctx.fillText(title,ml,27);ctx.font='bold 14px system-ui';ctx.fillText('Angle of twist, θ (degrees)',W/2-100,H-15);ctx.save();ctx.translate(19,H/2+70);ctx.rotate(-Math.PI/2);ctx.fillText(ylabel,0,0);ctx.restore();
- if(line){ctx.strokeStyle='#1769aa';ctx.lineWidth=3;ctx.beginPath();line.forEach((p,i)=>{i?ctx.lineTo(X(p[0]),Y(p[1])):ctx.moveTo(X(p[0]),Y(p[1]))});ctx.stroke()}
+ if(line && line.length > 1){
+    ctx.strokeStyle='#1769aa';
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.moveTo(X(line[0][0]),Y(line[0][1]));
+
+    for(let i=1;i<line.length;i++){
+        ctx.lineTo(X(line[i][0]),Y(line[i][1]));
+    }
+
+    ctx.stroke();
+}
  ctx.fillStyle='#17202a';xs.forEach((v,i)=>{ctx.beginPath();ctx.arc(X(v),Y(ys[i]),4,0,Math.PI*2);ctx.fill()});
  if(hi){ctx.fillStyle='#b45f06';hi.forEach(p=>{ctx.beginPath();ctx.arc(X(p[0]),Y(p[1]),6,0,Math.PI*2);ctx.fill()})}
 }
