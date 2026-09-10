@@ -169,7 +169,7 @@ function analyze(){
   $('message').textContent=f.r2<.99?'R² is below 0.99. Try changing the number of elastic points and inspect the graph.':'Strong linear fit for the selected points. Still inspect the graph and compare nearby point counts before accepting the elastic region.';
   const line=rad.slice(0,n).map(v=>[v*180/Math.PI,(f.a+f.m*v)/factor]);
   draw($('elasticPlot'),ang.slice(0,n),tin.slice(0,n),'Elastic / Proportional Region — G = '+G.toFixed(3)+' GPa','Torque ('+unit+')',line,ang.slice(0,n).map((v,i)=>[v,tin[i]]));
-  draw($('fullPlot'),ang,tin,'Complete Torque–Twist Curve','Torque ('+unit+')',null,ang.slice(0,n).map((v,i)=>[v,tin[i]]));
+  draw($('fullPlot'),ang,tin,'Complete Torque–Twist Curve','Torque ('+unit+')',ang.map((v,i)=>[v,tin[i]]),ang.slice(0,n).map((v,i)=>[v,tin[i]]));
   let h='<table class="processed"><thead><tr><th>Angle (deg)</th><th>Angle (rad)</th><th>Torque ('+unit+')</th><th>Torque (N·mm)</th><th>Used for G?</th></tr></thead><tbody>';
   r.forEach((v,i)=>h+='<tr><td>'+v.a+'</td><td>'+rad[i].toFixed(6)+'</td><td>'+v.t+'</td><td>'+T[i].toFixed(3)+'</td><td>'+(i<n?'Yes':'No')+'</td></tr>');
   $('dataTable').innerHTML=h+'</tbody></table>';
