@@ -203,7 +203,7 @@ $('dlCsv').onclick=()=>{
  const csv=rows.map(row=>row.map(v=>{
    const s=String(v);
    return /[",\\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
- }).join(',')).join('\\n')+'\\n';
+ }).join(',')).join('\n')+'\n';
  const a=document.createElement('a');
  a.download='torsion_processed_data.csv';
  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
