@@ -67,7 +67,7 @@ canvas{display:block;width:100%;height:auto;border:1px solid var(--line);border-
 <div class="actions"><button class="btn secondary" id="dlElastic">Download elastic graph PNG</button></div>
 <h3>Complete torque–twist curve</h3>
 <canvas id="fullPlot" width="1200" height="720"></canvas>
-<div class="actions"><button class="btn secondary" id="dlFull">Download complete graph PNG</button><button class="btn secondary" id="dlCsv">Download processed CSV</button><button class="btn primary" id="dlReport">Download report</button></div>
+<div class="actions"><button class="btn secondary" id="dlFull">Download complete graph PNG</button><button class="btn secondary" id="dlCsv">Download processed CSV</button><button class="btn primary" id="dlReport">Generate PDF report</button></div>
 <h3>Processed readings</h3><div class="tableout" id="dataTable"></div>
 </section>
 
@@ -213,13 +213,19 @@ $('dlCsv').onclick=()=>{
 
 $('dlReport').onclick=()=>{
  if(!last)return;
+
  const d=Number($('d').value), L=Number($('L').value);
  const J=Math.PI*d**4/32;
  const f=reg(last.rad.slice(0,last.n),last.T.slice(0,last.n));
  const G=f.m*L/J/1000;
  const elasticImg=$('elasticPlot').toDataURL('image/png');
  const fullImg=$('fullPlot').toDataURL('image/png');
- const now=new Date().toLocaleString();
+
+ // Use a fixed, human-readable timestamp in the report.
+ const now=new Date().toLocaleString(undefined,{
+   year:'numeric',month:'2-digit',day:'2-digit',
+   hour:'2-digit',minute:'2-digit',second:'2-digit'
+ });
 
  let table='<table><thead><tr><th>Angle (deg)</th><th>Angle (rad)</th><th>Torque ('+last.unit+')</th><th>Torque (N·mm)</th><th>Used for G?</th></tr></thead><tbody>';
  last.r.forEach((v,i)=>{
@@ -227,43 +233,83 @@ $('dlReport').onclick=()=>{
  });
  table+='</tbody></table>';
 
- const report='<!doctype html><html><head><meta charset="utf-8"><title>ME F216 — Torsion Test Report</title>'+
+ const report='<!doctype html><html><head><meta charset="utf-8"><title>ME F216 — Torsion Test Analysis Report</title>'+
  '<style>'+
- 'body{font-family:Arial,Helvetica,sans-serif;color:#17202a;max-width:1000px;margin:32px auto;padding:0 24px;line-height:1.45}'+
- 'h1{margin-bottom:4px}h2{border-bottom:1px solid #ccc;padding-bottom:6px;margin-top:28px}'+
- '.sub{color:#61707e}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}'+
- '.box{border:1px solid #d7dde4;border-radius:8px;padding:12px}.box b{display:block;font-size:12px;color:#61707e}.box strong{font-size:20px}'+
- 'table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #cfd5db;padding:6px 8px;text-align:right}th{background:#eef2f5}'+
- 'th:last-child,td:last-child{text-align:center}.plot{width:100%;border:1px solid #d7dde4;margin:8px 0 20px}'+
- '.note{background:#fff8df;border:1px solid #e6d29a;padding:10px;border-radius:7px}'+
- '@media print{body{margin:12mm auto;padding:0}.plot{break-inside:avoid}h2{break-after:avoid}}'+
+ '@page{size:A4;margin:14mm 13mm 15mm}'+
+ '*{box-sizing:border-box}'+
+ 'html,body{margin:0;padding:0;background:#fff}'+
+ 'body{font-family:Arial,Helvetica,sans-serif;color:#17202a;font-size:11pt;line-height:1.4}'+
+ 'h1{font-size:23pt;margin:0 0 3px;font-weight:700}'+
+ 'h2{font-size:16pt;margin:0 0 12px;padding:0 0 6px;border-bottom:1.5px solid #9aa4ad}'+
+ 'h3{font-size:13pt;margin:0 0 8px}'+
+ '.sub{color:#5e6b76;margin:0 0 20px}'+
+ '.page{page-break-after:always}'+
+ '.page:last-child{page-break-after:auto}'+
+ '.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}'+
+ '.box{border:1px solid #cfd5da;padding:10px 12px;border-radius:5px;min-height:58px}'+
+ '.box b{display:block;font-size:8.5pt;color:#65727d;margin-bottom:3px}'+
+ '.box strong{font-size:14pt}'+
+ '.results{grid-template-columns:repeat(4,1fr)}'+
+ '.note{border:1px solid #d9c77c;background:#fff9df;padding:9px 11px;border-radius:5px;margin:12px 0}'+
+ '.small{font-size:9.5pt;color:#4e5b65}'+
+ '.plot{display:block;width:100%;height:auto;border:1px solid #d8dde1;margin:8px 0 0}'+
+ '.plot-wrap{break-inside:avoid}'+
+ 'table{border-collapse:collapse;width:100%;font-size:8.5pt}'+
+ 'thead{display:table-header-group}'+
+ 'th,td{border:1px solid #cbd2d8;padding:5px 6px;text-align:right}'+
+ 'th{background:#eef2f5;font-weight:700}'+
+ 'th:last-child,td:last-child{text-align:center}'+
+ 'tr{break-inside:avoid}'+
+ '.footer-note{font-size:8.5pt;color:#6a747c;margin-top:12px}'+
+ '@media screen{body{max-width:900px;margin:30px auto;padding:0 24px}.page{margin-bottom:30px}}'+
+ '@media print{.page{break-after:page}.page:last-child{break-after:auto}}'+
  '</style></head><body>'+
- '<h1>ME F216 — Torsion Test Analysis Report</h1><p class="sub">Generated '+now+'</p>'+
+ '<div class="page">'+
+ '<h1>ME F216 — Torsion Test Analysis Report</h1>'+
+ '<p class="sub">Generated '+now+'</p>'+
  '<h2>Specimen information</h2>'+
- '<div class="grid"><div class="box"><b>Diameter d</b><strong>'+d+' mm</strong></div>'+
- '<div class="box"><b>Gauge length L</b><strong>'+L+' mm</strong></div>'+
+ '<div class="grid"><div class="box"><b>Diameter, d</b><strong>'+d+' mm</strong></div>'+
+ '<div class="box"><b>Gauge length, L</b><strong>'+L+' mm</strong></div>'+
  '<div class="box"><b>Torque input unit</b><strong>'+last.unit+'</strong></div></div>'+
  '<h2>Results</h2>'+
- '<div class="grid"><div class="box"><b>Polar moment J</b><strong>'+J.toFixed(3)+' mm⁴</strong></div>'+
- '<div class="box"><b>Slope m</b><strong>'+f.m.toFixed(1)+' N·mm/rad</strong></div>'+
+ '<div class="grid results"><div class="box"><b>Polar moment, J</b><strong>'+J.toFixed(3)+' mm⁴</strong></div>'+
+ '<div class="box"><b>Slope, m</b><strong>'+f.m.toFixed(1)+' N·mm/rad</strong></div>'+
  '<div class="box"><b>R²</b><strong>'+f.r2.toFixed(5)+'</strong></div>'+
- '<div class="box"><b>Modulus G</b><strong>'+G.toFixed(3)+' GPa</strong></div></div>'+
- '<p class="note">'+(f.r2<.99?'R² is below 0.99. Try changing the number of elastic points and inspect the graph.':'Strong linear fit for the selected points. Still inspect the graph and compare nearby point counts before accepting the elastic region.')+'</p>'+
+ '<div class="box"><b>Modulus, G</b><strong>'+G.toFixed(3)+' GPa</strong></div></div>'+
  '<p><strong>Initial points used for regression:</strong> '+last.n+'</p>'+
- '<h2>Elastic / Proportional Region</h2><img class="plot" src="'+elasticImg+'">'+
- '<h2>Complete Torque–Twist Curve</h2><img class="plot" src="'+fullImg+'">'+
+ '<p class="note">'+(f.r2<.99?'R² is below 0.99. Try changing the number of elastic points and inspect the graph.':'Strong linear fit for the selected points. Still inspect the graph and compare nearby point counts before accepting the elastic region.')+'</p>'+
+ '<h2>Elastic / Proportional Region</h2>'+
+ '<div class="plot-wrap"><img class="plot" src="'+elasticImg+'"></div>'+
+ '</div>'+
+ '<div class="page">'+
+ '<h2>Complete Torque–Twist Curve</h2>'+
+ '<div class="plot-wrap"><img class="plot" src="'+fullImg+'"></div>'+
+ '</div>'+
+ '<div class="page">'+
  '<h2>Processed readings</h2>'+table+
- '<h2>Calculation used</h2>'+
+ '<h2 style="margin-top:22px">Calculation used</h2>'+
  '<p>For a solid circular specimen, <strong>J = πd⁴/32</strong>. The selected initial readings are fitted to <strong>T = a + mθ</strong>, using torque in N·mm and θ in radians, then <strong>G = mL/J</strong>.</p>'+
  '<p>Conversions: 1 kgf·cm = 98.0665 N·mm; 1 kgf·m = 9806.65 N·mm.</p>'+
  '<p class="note">The selected number of elastic points is a starting point. Compare nearby choices and inspect the fitted graph; a high R² alone does not prove that the selected points are physically elastic.</p>'+
+ '</div>'+
  '</body></html>';
 
- const a=document.createElement('a');
- a.download='torsion_test_report.html';
- a.href=URL.createObjectURL(new Blob([report],{type:'text/html;charset=utf-8'}));
- a.click();
- URL.revokeObjectURL(a.href);
+ // Open a clean, print-optimized report. The browser's native Print dialog
+ // can then save it as a PDF with no third-party watermark.
+ const win=window.open('','_blank');
+ if(!win){
+   alert('Please allow pop-ups for this site to generate the PDF report.');
+   return;
+ }
+ win.document.open();
+ win.document.write(report);
+ win.document.close();
+ win.focus();
+
+ // Give the browser a moment to render the canvas images before printing.
+ setTimeout(()=>{
+   win.print();
+ },400);
 };
 </script>
 </body>
